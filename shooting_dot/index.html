@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>DOT</title>
+</head>
+
+<style>
+    body {
+        background: url('http://crispme.com/wp-content/uploads/19177.jpg');
+        background-size: cover;
+    }
+</style>
+<body>
+    <canvas id="myCanvas" width="820" height="520"></canvas>
+
+
+    <script>
+        var canv = {};
+        var ctx = {};
+        var canvasColor = 'azure';
+        var playerColor = 'cornflowerblue';
+        var bulletColor = 'coral';
+
+        var px, py;
+        var xv = 0, yv = 0; 
+
+        var  gridSize = 20;
+        var xGridCount, yGridCount;
+
+        var directions = {
+            37: 'left',
+            39: 'right',
+            38: 'up',
+            40: 'down',
+        };
+
+        var _velocity = {
+            left: { xv: -1, yv: 0},
+            right: { xv: 1, yv: 0 },
+            up: { xv: 0, yv: -1},
+            down: {xv: 0, yv: 1}
+        };
+
+        var bullets = [];
+        var currentDirection = 'up';
+
+        window.onload = function() {
+            canv = document.getElementById("myCanvas");
+            ctx = canv.getContext("2d");
+
+            xGridCount = canv.width / gridSize;
+            yGridCount = canv.height / gridSize;
+
+            px = xGridCount / 2 - 1;
+            py = yGridCount / 2 - 1;               
+                      
+            document.addEventListener('keydown', keyDownHandler);
+            document.addEventListener('keyup', keyUpHandler);
+
+            setInterval(game, 1000 / 7);
+            setInterval(drawBullets, 1000 / 15);
+        }
+
+        function _isArrowKey(keyCode) {
+            if(directions.hasOwnProperty(keyCode)) return true;
+            else return false;      
+        }      
+
+        function game() {
+            ctx.fillStyle = canvasColor;
+            ctx.fillRect(0, 0, canv.width, canv.height);
+
+            px += xv;
+            py += yv;
+
+            if(px > xGridCount - 1) {
+                px = xGridCount - 1;
+            }
+            else if(px < 0) {
+                px = 0;
+            }
+
+            if(py > yGridCount - 1) {
+                py = yGridCount - 1;
+            }
+            else if(py < 0) {
+                py = 0;
+            }
+            ctx.fillStyle = playerColor;
+            ctx.fillRect(px * gridSize, py * gridSize, gridSize, gridSize);
+        }
+
+        function drawBullets() {
+            ctx.fillStyle = bulletColor;
+            var bulletsOnScreen = bullets.filter(function(val, index, arr) {
+                    return (val.X > 0 && val.X < xGridCount -1 && val.Y > 0 && val.Y < yGridCount - 1);
+            });
+            bullets = bulletsOnScreen;
+            bullets.forEach(function(val, index, arr) {
+                val.X += _velocity[val._dir]['xv'];
+                val.Y += _velocity[val._dir]['yv'];
+                ctx.fillRect(val.X * gridSize, val.Y * gridSize, gridSize, gridSize);
+            });
+        }
+
+        function keyDownHandler(evt) {
+
+            if (evt.keyCode === 32) shootButtonHandler();
+            else {
+                var direction = directions[evt.keyCode];
+                if ( direction ) setDirection( direction );
+            }
+        }
+
+        function keyUpHandler(evt) {
+            if( _isArrowKey(evt.keyCode) ) {
+                    if(currentDirection === directions[evt.keyCode]) {
+                        xv = 0;
+                        yv = 0;
+                    }     
+                }    
+        }
+
+        function setDirection(direction) {
+            currentDirection = direction;
+            xv = _velocity[direction]['xv'];
+            yv = _velocity[direction]['yv'];
+        }
+
+        function shootButtonHandler() {
+            var bullet = {
+                X: px,
+                Y: py,
+                _dir: currentDirection
+            };
+
+            setTimeout(function() {
+                bullets.push(bullet);
+            }, 1000 / 10);
+            
+        }
+     
+
+    </script>
+</body>
+</html>
